@@ -1,4 +1,5 @@
-# Copyright 2024 3WEBS LLC
+# SPDX-FileCopyrightText: Copyright 2024 3WEBS LLC
+# SPDX-FileCopyrightText: Copyright 2024 Gavin John
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 name: Continuous Integration
