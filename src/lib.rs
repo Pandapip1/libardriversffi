@@ -1,3 +1,4 @@
+// Copyright 2024 Gavin John
 // SPDX-License-Identifier: GPL-3.0-or-later
 extern crate ar_drivers;
 

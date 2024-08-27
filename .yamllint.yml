@@ -1,0 +1,10 @@
+# Copyright 2024 Gavin John
+# SPDX-License-Identifier: LicenseRef-Copyright-Ineligiblity-Disclaimer-1.0
+
+extends: default
+
+rules:
+  document-start: disable
+  line-length: disable
+  comments:
+    min-spaces-from-content: 1

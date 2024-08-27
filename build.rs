@@ -1,3 +1,6 @@
+// Copyright 2024 Gavin John
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 use cbindgen::{Config, Language};
 use std::env;
 
