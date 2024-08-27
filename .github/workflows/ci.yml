@@ -1,0 +1,88 @@
+# Copyright 2024 3WEBS LLC
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+name: Continuous Integration
+
+on:  # yamllint disable-line
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types:
+      - synchronize
+      - opened
+      - reopened
+
+jobs:
+  markdownlint:
+    name: 🖋️ Markdownlint
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📦 Checkout Repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          fetch-depth: 2
+      - name: 🟰 Detect Changed Files
+        uses: tj-actions/changed-files@1754cd4b9e661d1f0eced3b33545a8d8b3bc46d8 # v44.5.0
+        id: changed-files
+        with:
+          files: '**/*.md'
+          separator: ","
+      - name: 🖋️ Markdownlint
+        uses: DavidAnson/markdownlint-cli2-action@b4c9feab76d8025d1e83c653fa3990936df0e6c8  # v16.0.0
+        if: steps.changed-files.outputs.all_changed_files != ''
+        with:
+          separator: ","
+          config: .markdownlint.yml
+          globs: ${{ steps.changed-files.outputs.all_changed_files }}
+  reuse:
+    name: 📝 REUSE
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📦 Checkout Repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          fetch-depth: 2
+      - name: 🟰 Detect Changed Files
+        uses: tj-actions/changed-files@1754cd4b9e661d1f0eced3b33545a8d8b3bc46d8 # v44.5.0
+        id: changed-files
+        with:
+          files: '**/*'
+          separator: "|"
+      - name: 🗑️ Delete Unchanged Files
+        run: |
+          shopt -s extglob
+          rm -rf !(${{ steps.changed-files.outputs.all_changed_files }}|.reuse|LICENSES)
+      - name: 📝 REUSE Compliance Check
+        uses: fsfe/reuse-action@a46482ca367aef4454a87620aa37c2be4b2f8106  # v3.0.0
+  yamllint:
+    name: 📜 Yamllint
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📦 Checkout Repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          fetch-depth: 2
+      - name: 🟰 Detect Changed Files
+        uses: tj-actions/changed-files@1754cd4b9e661d1f0eced3b33545a8d8b3bc46d8 # v44.5.0
+        id: changed-files
+        with:
+          files: '**/*.yml'
+          separator: " "
+      - name: ❄️ Install Nix
+        uses: cachix/install-nix-action@ba0dd844c9180cbf77aa72a116d6fbc515d0e87b # v27
+        with:
+          extra_nix_config: "system-features = nixos-test benchmark big-parallel kvm"
+      - name: ❄️ Cache Nix Store
+        uses: DeterminateSystems/magic-nix-cache-action@b46e247b898aa56e6d2d2e728dc6df6c84fdb738 # v7
+        with:
+          # Skip uploads for PRs to save time
+          use-gha-cache: ${{ github.event_name == 'push' }}
+          use-flakehub: ${{ github.event_name == 'push' }}
+          # Disable telemetry
+          diagnostic-endpoint: ""
+      - name: 📜 Yamllint
+        if: steps.changed-files.outputs.all_changed_files != ''
+        run: yamllint -c .yamllint.yml ${{ steps.changed-files.outputs.all_changed_files }}

@@ -1,0 +1,16 @@
+[package]
+name = "libardriversffi"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "ardriversffi"
+crate-type = ["cdylib"]
+
+[dependencies]
+ar-drivers = "0.4.3"
+libc = "0.2.158"
+nalgebra = "0.33.0"
+
+[build-dependencies]
+cbindgen = "0.24"

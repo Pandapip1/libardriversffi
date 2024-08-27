@@ -1,0 +1,57 @@
+# Copyright 2024 3WEBS LLC
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+name: Automatic Nix Flake Lock Update
+
+on:  # yamllint disable-line
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  update:
+    name: 🔄 Automatic Nix Flake Lock Update
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📦 Checkout Repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          fetch-depth: 2
+      - name: 🧑 Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git branch update-flake-lock
+          git switch update-flake-lock
+      - name: ❄️ Install Nix
+        uses: cachix/install-nix-action@ba0dd844c9180cbf77aa72a116d6fbc515d0e87b # v27
+        with:
+          extra_nix_config: "system-features = nixos-test benchmark big-parallel kvm"
+      - name: ❄️ Cache Nix Store
+        uses: DeterminateSystems/magic-nix-cache-action@b46e247b898aa56e6d2d2e728dc6df6c84fdb738 # v7
+        with:
+          # Skip uploads to save time
+          use-gha-cache: false
+          use-flakehub: false
+          # Disable telemetry
+          diagnostic-endpoint: ""
+      - name: 🔄 Update Flake
+        run: nix flake update
+      - name: 💾 Commit Changes
+        run: |
+          git add flake.lock
+          git commit -m "Automatic Nix Flake Lock Update"
+      - name: 📤 Force-Push Changes
+        run: git push --force --set-upstream origin update-flake-lock
+      - name: 🔍 Check for Existing PR
+        id: check_pr
+        run: |
+          PR_URL=$(gh pr list --base main --head update-flake-lock --json url --jq '.[0].url')
+          echo "::set-output name=pr_url::$PR_URL"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 📤 Open PR
+        if: steps.check_pr.outputs.pr_url == ''
+        run: gh pr create --base main --head update-flake-lock --title "Automatic Nix Flake Lock Update" --body ""
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
