@@ -1,0 +1,10 @@
+version = 1
+SPDX-PackageName = "libardrivers"
+SPDX-PackageDownloadLocation = "https://github.com/Pandapip1/libardrivers"
+
+[[annotations]]
+path = ["flake.lock", "Cargo.lock"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2024 Gavin John"
+SPDX-License-Identifier = "LicenseRef-Copyright-Ineligiblity-Disclaimer-1.0"
+SPDX-FileComment = "Computer-generated lockfiles have no copyright."
